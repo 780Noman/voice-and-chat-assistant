@@ -1,4 +1,3 @@
-
 import streamlit as st
 import speech_recognition as sr
 from gtts import gTTS
@@ -124,7 +123,13 @@ def main():
 
     # --- Sidebar ---
     st.sidebar.title("Mode")
-    mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
+    # Check if running on Streamlit Cloud
+    if os.environ.get("IS_STREAMLIT_CLOUD") == "true":
+        mode = "Chat Mode"
+        st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
+    else:
+        mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
+
     if st.sidebar.button("Clear Chat History"):
         st.session_state.history = []
         st.session_state.audio_path = None
