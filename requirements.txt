@@ -1,0 +1,5 @@
+streamlit
+SpeechRecognition
+gtts
+langdetect
+google-generativeai
