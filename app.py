@@ -67,22 +67,27 @@ def configure_genai():
 # --- Speech Recognition ---
 def record_and_recognize():
     recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎙️ Listening...")
-        try:
-            audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
-            with st.spinner("Recognizing your voice..."):
-                text = recognizer.recognize_google(audio, language="ur-PK")
-            st.success(f"You said: {text}")
-            return text
-        except sr.WaitTimeoutError:
-            st.warning("Listening timed out. Please try again.")
-        except sr.UnknownValueError:
-            st.error("Sorry, I could not understand the audio.")
-        except sr.RequestError as e:
-            st.error(f"Could not request results; {e}")
-        except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")
+    try:
+        with sr.Microphone() as source:
+            st.info("🎙️ Listening...")
+            try:
+                audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
+                with st.spinner("Recognizing your voice..."):
+                    text = recognizer.recognize_google(audio, language="ur-PK")
+                st.success(f"You said: {text}")
+                return text
+            except sr.WaitTimeoutError:
+                st.warning("Listening timed out. Please try again.")
+            except sr.UnknownValueError:
+                st.error("Sorry, I could not understand the audio.")
+            except sr.RequestError as e:
+                st.error(f"Could not request results; {e}")
+            except Exception as e:
+                st.error(f"An unexpected error occurred: {e}")
+    except OSError:
+        st.error("Microphone not found. Voice input is not available on this device or in this environment.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred with the microphone: {e}")
     return None
 
 # --- AI Response Generation ---
@@ -122,15 +127,9 @@ def main():
     if "audio_path" not in st.session_state:
         st.session_state.audio_path = None
 
-    # --- Environment Detection and UI Selection ---
-    is_streamlit_cloud = os.environ.get("IS_STREAMLIT_CLOUD") == "true"
-
-    if is_streamlit_cloud:
-        st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
-        mode = "Chat Mode"
-    else:
-        st.sidebar.title("Mode")
-        mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
+    # --- UI Selection ---
+    st.sidebar.title("Mode")
+    mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
 
     if st.sidebar.button("Clear Chat History"):
         st.session_state.history = []
@@ -159,7 +158,7 @@ def main():
                 st.session_state.history.append({"role": "model", "parts": [response]})
             st.rerun()
 
-    elif mode == "Voice Mode" and not is_streamlit_cloud:
+    elif mode == "Voice Mode":
         if st.button("🎤 Record Voice"):
             user_text = record_and_recognize()
             if user_text:
