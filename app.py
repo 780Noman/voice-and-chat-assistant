@@ -112,6 +112,7 @@ def main():
         st.info("Please enter your Gemini API key in the sidebar to begin.")
         return
 
+
     model = configure_genai()
     if not model:
         return
