@@ -66,22 +66,29 @@ def configure_genai():
 # --- Speech Recognition ---
 def record_and_recognize():
     recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎙️ Listening...")
-        try:
-            audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
-            with st.spinner("Recognizing your voice..."):
-                text = recognizer.recognize_google(audio, language="ur-PK")
-            st.success(f"You said: {text}")
-            return text
-        except sr.WaitTimeoutError:
-            st.warning("Listening timed out. Please try again.")
-        except sr.UnknownValueError:
-            st.error("Sorry, I could not understand the audio.")
-        except sr.RequestError as e:
-            st.error(f"Could not request results; {e}")
-        except Exception as e:
-            st.error(f"An unexpected error occurred: {e}")
+    try:
+        # This outer try/except block handles errors if the microphone cannot be accessed at all.
+        with sr.Microphone() as source:
+            st.info("🎙️ Listening...")
+            # This inner try/except block handles errors during the recognition process.
+            try:
+                audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
+                with st.spinner("Recognizing your voice..."):
+                    text = recognizer.recognize_google(audio, language="ur-PK")
+                st.success(f"You said: {text}")
+                return text
+            except sr.WaitTimeoutError:
+                st.warning("Listening timed out. Please try again.")
+            except sr.UnknownValueError:
+                st.error("Sorry, I could not understand the audio.")
+            except sr.RequestError as e:
+                st.error(f"Could not request results; {e}")
+            except Exception as e:
+                st.error(f"An unexpected error occurred during recognition: {e}")
+    except (OSError, AttributeError):
+        st.error("Microphone not found or access is denied. Voice mode is unavailable in this environment.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred while accessing the microphone: {e}")
     return None
 
 # --- AI Response Generation ---
