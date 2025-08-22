@@ -124,10 +124,13 @@ def main():
 
     # --- Sidebar ---
     st.sidebar.title("Mode")
-    # Check if running on Streamlit Cloud
-    if os.environ.get("IS_STREAMLIT_CLOUD") == "true":
+    on_streamlit_cloud = os.environ.get("IS_STREAMLIT_CLOUD") == "true"
+    if on_streamlit_cloud or not PYAUDIO_AVAILABLE:
         mode = "Chat Mode"
-        st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
+        if on_streamlit_cloud:
+            st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
+        else:
+            st.sidebar.warning("Voice mode is disabled. Please install PyAudio to enable it.")
     else:
         mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
 
