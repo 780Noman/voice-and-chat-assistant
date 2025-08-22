@@ -6,12 +6,6 @@ import google.generativeai as genai
 from langdetect import detect
 import os
 
-try:
-    import pyaudio
-    PYAUDIO_AVAILABLE = True
-except ImportError:
-    PYAUDIO_AVAILABLE = False
-
 # --- Page Configuration ---
 st.set_page_config(page_title="Voice Assistant", page_icon="🎙️", layout="centered")
 
@@ -130,13 +124,10 @@ def main():
 
     # --- Sidebar ---
     st.sidebar.title("Mode")
-    on_streamlit_cloud = os.environ.get("IS_STREAMLIT_CLOUD") == "true"
-    if on_streamlit_cloud or not PYAUDIO_AVAILABLE:
+    # Check if running on Streamlit Cloud
+    if os.environ.get("IS_STREAMLIT_CLOUD") == "true":
         mode = "Chat Mode"
-        if on_streamlit_cloud:
-            st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
-        else:
-            st.sidebar.warning("Voice mode is disabled. Please install PyAudio to enable it.")
+        st.sidebar.info("Voice mode is disabled on Streamlit Cloud.")
     else:
         mode = st.sidebar.radio("Choose your interaction mode:", ("Chat Mode", "Voice Mode"))
 
@@ -169,18 +160,15 @@ def main():
 
     elif mode == "Voice Mode":
         if st.button("🎤 Record Voice"):
-                        if "IS_STREAMLIT_CLOUD" in os.environ:
-                            st.error("Voice mode is not available on Streamlit Cloud.")
-        else:
-                user_text = record_and_recognize()
-                if user_text:
-                    st.session_state.history.append({"role": "user", "parts": [user_text]})
-                    with st.spinner("Assistant is thinking..."):
-                        bot_response = generate_response(model, st.session_state.history)
-                        st.session_state.history.append({"role": "model", "parts": [bot_response]})
-                        lang = detect(bot_response)
-                        st.session_state.audio_path = text_to_speech(bot_response, lang=lang)
-                    st.rerun()
+            user_text = record_and_recognize()
+            if user_text:
+                st.session_state.history.append({"role": "user", "parts": [user_text]})
+                with st.spinner("Assistant is thinking..."):
+                    bot_response = generate_response(model, st.session_state.history)
+                    st.session_state.history.append({"role": "model", "parts": [bot_response]})
+                    lang = detect(bot_response)
+                    st.session_state.audio_path = text_to_speech(bot_response, lang=lang)
+                st.rerun()
 
 if __name__ == "__main__":
     main()

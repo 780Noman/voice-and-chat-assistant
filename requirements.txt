@@ -3,4 +3,3 @@ SpeechRecognition
 gtts
 langdetect
 google-generativeai
-PyAudio
