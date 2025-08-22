@@ -6,6 +6,12 @@ import google.generativeai as genai
 from langdetect import detect
 import os
 
+try:
+    import pyaudio
+    PYAUDIO_AVAILABLE = True
+except ImportError:
+    PYAUDIO_AVAILABLE = False
+
 # --- Page Configuration ---
 st.set_page_config(page_title="Voice Assistant", page_icon="🎙️", layout="centered")
 
