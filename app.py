@@ -169,15 +169,18 @@ def main():
 
     elif mode == "Voice Mode":
         if st.button("🎤 Record Voice"):
-            user_text = record_and_recognize()
-            if user_text:
-                st.session_state.history.append({"role": "user", "parts": [user_text]})
-                with st.spinner("Assistant is thinking..."):
-                    bot_response = generate_response(model, st.session_state.history)
-                    st.session_state.history.append({"role": "model", "parts": [bot_response]})
-                    lang = detect(bot_response)
-                    st.session_state.audio_path = text_to_speech(bot_response, lang=lang)
-                st.rerun()
+            if os.environ.get("IS_STREAMLIT_CLOUD") == "true":
+                st.error("Voice mode is not available on Streamlit Cloud.")
+            else:
+                user_text = record_and_recognize()
+                if user_text:
+                    st.session_state.history.append({"role": "user", "parts": [user_text]})
+                    with st.spinner("Assistant is thinking..."):
+                        bot_response = generate_response(model, st.session_state.history)
+                        st.session_state.history.append({"role": "model", "parts": [bot_response]})
+                        lang = detect(bot_response)
+                        st.session_state.audio_path = text_to_speech(bot_response, lang=lang)
+                    st.rerun()
 
 if __name__ == "__main__":
     main()
